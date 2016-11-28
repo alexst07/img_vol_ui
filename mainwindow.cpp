@@ -26,6 +26,11 @@ void MainWindow::on_actionImportar_triggered()
 
   if (!file_img.empty()) {
     img_vol = std::make_shared<imgvol::ImgVol>(file_img);
+    NormalizeImage(*img_vol);
+    std::string str = "image: " + file_img + " <" + std::to_string(img_vol->SizeX())
+        + ", " + std::to_string(img_vol->SizeY()) + ", " + std::to_string(img_vol->SizeY())
+        + ">";
+    ui->label_img_status->setText(QString::fromUtf8(str.c_str()));
   }
 }
 
@@ -45,8 +50,9 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
 
     if (img_vol_label) {
       imgvol::Img2D img2d_label = imgvol::Cut(*img_vol_label, axis, arg1);
+      imgvol::Img2D img2d = imgvol::Cut(*img_vol, axis, arg1);
 
-      imgvol::ImgColor img_color = imgvol::ColorLabels(img2d_label, img2d_label, 16);
+      imgvol::ImgColor img_color = imgvol::ColorLabels(img2d, img2d_label, 16);
       img_color.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
     } else {
       imgvol::Img2D img2d = imgvol::Cut(*img_vol, axis, arg1);
@@ -151,10 +157,61 @@ void MainWindow::on_pushButton_4_clicked()
   int n = std::stoi(ui->edit_slices_num->text().toUtf8().constData());
 
   std::array<float,3> p1 {float(p1x), float(p1y), float(p1z)};
-  std::array<float,3> p2 {float(p2x), float(p2y), float(p2z)};
+  std::array<float,3> pn {float(p2x), float(p2y), float(p2z)};
 
-  std::shared_ptr<imgvol::ImgVol> ref_img_vol(
-        new imgvol::ImgVol(imgvol::ReformataImg(*img_vol, n, p1, p2)));
+  imgvol::ImgVol ref_img = imgvol::ReformataImg(*img_vol, 100, p1, pn);
 
-  img_vol = ref_img_vol;
+  imgvol::ImgGray img = MaxIntensionProjection(ref_img, M_PI/180*0, M_PI/180*0,
+                                               std::array<float,3>{0,0,1});
+  img.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
+  ShowImage("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g", ui->label);
+}
+
+void MainWindow::on_radio_axis_x_clicked()
+{
+    ui->spinBox->setMaximum(img_vol->SizeX());
+}
+
+void MainWindow::on_radio_axis_y_clicked()
+{
+    ui->spinBox->setMaximum(img_vol->SizeY());
+}
+
+void MainWindow::on_radio_axis_z_clicked()
+{
+    ui->spinBox->setMaximum(img_vol->SizeZ());
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+    float delta_x = std::stof(ui->spin_mipdeltax->text().toUtf8().constData());
+    float delta_y = std::stof(ui->spin_mipdeltay->text().toUtf8().constData());
+
+    std::array<float, 3> vet_normal {
+      std::stof(ui->mipvetx_edit->text().toUtf8().constData()),
+      std::stof(ui->mipvety_edit->text().toUtf8().constData()),
+      std::stof(ui->mipvetz_edit->text().toUtf8().constData())
+    };
+
+    imgvol::ImgGray img = imgvol::MaxIntensionProjection(*img_vol, M_PI/180*delta_x, M_PI/180*delta_y, vet_normal);
+    img.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
+    ShowImage("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g", ui->label);
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    std::array<float, 3> p1 {
+      std::stof(ui->planar_edit_px->text().toUtf8().constData()),
+      std::stof(ui->planar_edit_py->text().toUtf8().constData()),
+      std::stof(ui->planar_edit_pz->text().toUtf8().constData())
+    };
+
+    std::array<float, 3> vec {
+      std::stof(ui->planar_edit_vx->text().toUtf8().constData()),
+      std::stof(ui->planar_edit_vy->text().toUtf8().constData()),
+      std::stof(ui->planar_edit_vz->text().toUtf8().constData())
+    };
+  imgvol::ImgGray img = imgvol::CortePlanar(*img_vol, p1, vec);
+  img.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
+  ShowImage("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g", ui->label);
 }

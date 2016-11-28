@@ -43,6 +43,16 @@ private slots:
 
   void on_pushButton_4_clicked();
 
+  void on_radio_axis_x_clicked();
+
+  void on_radio_axis_y_clicked();
+
+  void on_radio_axis_z_clicked();
+
+  void on_pushButton_5_clicked();
+
+  void on_pushButton_6_clicked();
+
 private:
   Ui::MainWindow *ui;
   std::shared_ptr<imgvol::ImgVol> img_vol;

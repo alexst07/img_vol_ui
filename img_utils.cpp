@@ -7,7 +7,9 @@
 void ShowImage(std::string file, QLabel* label) {
   cv::Mat img;
   img = cv::imread(file);
-  cv::cvtColor(img,img,CV_BGR2RGB);
-  QImage imdisplay((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
+  cv::Mat temp;
+  img.convertTo(temp, CV_8U);
+//  cv::cvtColor(temp,temp,CV_BGR2RGB);
+  QImage imdisplay((uchar*)temp.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
   label->setPixmap(QPixmap::fromImage(imdisplay));
 }
