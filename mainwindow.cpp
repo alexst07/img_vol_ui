@@ -20,7 +20,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionImportar_triggered()
 {
   QString file1Name = QFileDialog::getOpenFileName(this,
-           tr("Open SCN File"), "/home", tr(".scn"));
+           tr("Open SCN File"), "/home/alex/Unicamp/img/libmc920/data", tr(".scn"));
 
   std::string file_img = file1Name.toUtf8().constData();
 
@@ -37,6 +37,8 @@ void MainWindow::on_actionImportar_triggered()
 void MainWindow::on_spinBox_valueChanged(int arg1)
 {
     imgvol::ImgVol::Axis axis = imgvol::ImgVol::Axis::aX;
+    bool w = false;
+    w = ui->check_side->isChecked();
 
     if (ui->radio_axis_y->isChecked()) {
       axis = imgvol::ImgVol::Axis::aY;
@@ -49,13 +51,13 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
     }
 
     if (img_vol_label) {
-      imgvol::Img2D img2d_label = imgvol::Cut(*img_vol_label, axis, arg1);
-      imgvol::Img2D img2d = imgvol::Cut(*img_vol, axis, arg1);
+      imgvol::Img2D img2d_label = imgvol::Cut(*img_vol_label, axis, arg1, w);
+      imgvol::Img2D img2d = imgvol::Cut(*img_vol, axis, arg1, w);
 
       imgvol::ImgColor img_color = imgvol::ColorLabels(img2d, img2d_label, 16);
       img_color.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
     } else {
-      imgvol::Img2D img2d = imgvol::Cut(*img_vol, axis, arg1);
+      imgvol::Img2D img2d = imgvol::Cut(*img_vol, axis, arg1, w);
       img2d_ptr = std::make_shared<imgvol::Img2D>(img2d);
       imgvol::ImgVet imggray(img2d.Data(), img2d.SizeX(), img2d.SizeY());
       imggray.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
@@ -76,8 +78,9 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButton_2_clicked()
 {
+  int num_bits = ui->spin_num_bits->value();
   imgvol::Img2D img2d = *img2d_ptr;
-  imgvol::Normalize(img2d, 12);
+  imgvol::Normalize(img2d, num_bits);
   imgvol::ImgVet imggray(img2d.Data(), img2d.SizeX(), img2d.SizeY());
   imggray.WriteImg("/home/alex/Unicamp/img_ui/build-img_ui-Desktop-Debug/im__g");
 
@@ -135,7 +138,7 @@ void MainWindow::on_slider_radx_actionTriggered(int action)
 void MainWindow::on_actionImportar_Label_triggered()
 {
   QString file1Name = QFileDialog::getOpenFileName(this,
-           tr("Open SCN File"), "/home", tr(".scn"));
+           tr("Open SCN File"), "/home/alex/Unicamp/img/libmc920/data", tr(".scn"));
 
   std::string file_img = file1Name.toUtf8().constData();
 
